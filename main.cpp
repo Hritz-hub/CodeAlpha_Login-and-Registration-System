@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits> 
 using namespace std;
 
 class User {
@@ -9,34 +10,44 @@ private:
 
 public:
     void registerUser() {
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+
         cout << "Enter a username: ";
-        cin >> username;
+        getline(cin, username); 
+
         cout << "Enter a password: ";
-        cin >> password;
+        getline(cin, password);
 
         if (checkDuplicate(username)) {
             cout << "Username already exists. Try another one.\n";
             return;
         }
 
-        ofstream file("users.txt", ios::app); // Open file in append mode
-        file << username << " " << password << endl;
+        ofstream file("users.txt", ios::app); 
+        file << username << "|" << password << endl;
         file.close();
 
         cout << "Registration successful!\n";
     }
 
     void loginUser() {
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
+
         cout << "Enter your username: ";
-        cin >> username;
+        getline(cin, username);
+
         cout << "Enter your password: ";
-        cin >> password;
+        getline(cin, password);
 
         ifstream file("users.txt");
-        string fileUser, filePass;
+        string line;
         bool found = false;
 
-        while (file >> fileUser >> filePass) {
+        while (getline(file, line)) {
+            size_t separator = line.find('|');
+            string fileUser = line.substr(0, separator);
+            string filePass = line.substr(separator + 1);
+
             if (fileUser == username && filePass == password) {
                 found = true;
                 break;
@@ -50,11 +61,13 @@ public:
             cout << "Invalid username or password.\n";
     }
 
-    bool checkDuplicate(string uname) {
+    bool checkDuplicate(const string& uname) {
         ifstream file("users.txt");
-        string fileUser, filePass;
+        string line;
 
-        while (file >> fileUser >> filePass) {
+        while (getline(file, line)) {
+            size_t separator = line.find('|');
+            string fileUser = line.substr(0, separator);
             if (fileUser == uname) {
                 file.close();
                 return true;
@@ -90,5 +103,6 @@ int main() {
     }
 
     return 0;
+}
 }
 
